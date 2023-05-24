@@ -20,7 +20,13 @@ internal class RequestInspectorJavaScriptInterface(webView: WebView) {
     fun findRecordedRequestForUrl(url: String, headers: Map<String, String>): RecordedRequest? {
         return synchronized(recordedRequests) {
             recordedRequests.find { recordedRequest ->
-                recordedRequest.headers[INTERCEPT_HEADER] == headers[INTERCEPT_HEADER] || url.contains(recordedRequest.url)
+                if (recordedRequest.headers.containsKey(INTERCEPT_HEADER)) {
+                    // If we have the header, use that to fetch the correct request
+                    recordedRequest.headers[INTERCEPT_HEADER] == headers[INTERCEPT_HEADER]
+                } else {
+                    // Otherwise fall back to the URL (and make sure it matches completely...)
+                    url == recordedRequest.url
+                }
             }
         }
     }
