@@ -263,10 +263,11 @@ window.fetch = function () {
     const fullUrl = getFullUrl(url);
     const method = arguments[1] && 'method' in arguments[1] ? arguments[1]['method'] : "GET";
     const body = arguments[1] && 'body' in arguments[1] ? arguments[1]['body'] : "";
-    const headers = JSON.stringify(arguments[1] && 'headers' in arguments[1] ? arguments[1]['headers'] : {});
+    const reqIdentifier = new Date().getTime();
+    const headers = JSON.stringify({ ...(arguments[1] && 'headers' in arguments[1] ? arguments[1]['headers'] : {}), '$INTERCEPT_HEADER': reqIdentifier });
     let err = new Error();
     $INTERFACE_NAME.recordFetch(fullUrl, method, body, headers, err.stack);
-    return window._fetch.apply(this, arguments);
+    return window._fetch.apply(this, { ...arguments, 'headers': headers });
 }
         """
 
