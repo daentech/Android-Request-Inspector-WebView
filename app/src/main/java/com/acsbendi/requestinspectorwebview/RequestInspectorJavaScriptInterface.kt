@@ -269,6 +269,18 @@ window.fetch = function () {
     $INTERFACE_NAME.recordFetch(fullUrl, method, body, headers, err.stack);
     return window._fetch.apply(this, { ...arguments, 'headers': headers });
 }
+
+window._sendBeacon = window.navigator.sendBeacon;
+window.navigator.sendBeacon = function (url, arguments) {
+    const fullUrl = getFullUrl(url);
+    const method = "POST";
+    const reqIdentifier = new Date().getTime();
+    const headers = JSON.stringify({ '$INTERCEPT_HEADER': reqIdentifier });
+    let err = new Error();
+    $INTERFACE_NAME.recordXhr(fullUrl, method, body, headers, err.stack);
+    this.setRequestHeader('$INTERCEPT_HEADER', reqIdentifier);
+    return window._sendBeacon.apply(this, arguments);
+}
         """
 
         fun enabledRequestInspection(webView: WebView, extraJavaScriptToInject: String) {
