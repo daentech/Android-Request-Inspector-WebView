@@ -10,12 +10,12 @@ group = "com.acsbendi"
 version = currentVersion
 
 android {
-    compileSdk = 31
+    compileSdk = 33
     namespace = "com.acsbendi.requestinspectorwebview"
 
     defaultConfig {
         minSdk = 21
-        targetSdk = 31
+        targetSdk = 33
 
         version = currentVersion
     }

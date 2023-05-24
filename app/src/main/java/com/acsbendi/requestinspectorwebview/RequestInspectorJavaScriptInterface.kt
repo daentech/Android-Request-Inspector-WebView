@@ -17,10 +17,10 @@ internal class RequestInspectorJavaScriptInterface(webView: WebView) {
 
     private val recordedRequests = ArrayList<RecordedRequest>()
 
-    fun findRecordedRequestForUrl(url: String): RecordedRequest? {
+    fun findRecordedRequestForUrl(url: String, headers: Map<String, String>): RecordedRequest? {
         return synchronized(recordedRequests) {
             recordedRequests.find { recordedRequest ->
-                url.contains(recordedRequest.url)
+                recordedRequest.headers[INTERCEPT_HEADER] == headers[INTERCEPT_HEADER] || url.contains(recordedRequest.url)
             }
         }
     }
@@ -163,6 +163,7 @@ internal class RequestInspectorJavaScriptInterface(webView: WebView) {
         private const val LOG_TAG = "RequestInspectorJs"
         private const val MULTIPART_FORM_BOUNDARY = "----WebKitFormBoundaryU7CgQs9WnqlZYKs6"
         private const val INTERFACE_NAME = "RequestInspection"
+        private const val INTERCEPT_HEADER = "x-request-intercept-identifier"
 
         @Language("JS")
         private const val JAVASCRIPT_INTERCEPTION_CODE = """
@@ -234,16 +235,19 @@ XMLHttpRequest.prototype._send = XMLHttpRequest.prototype.send;
 XMLHttpRequest.prototype.send = function (body) {
     const err = new Error();
     const url = getFullUrl(xmlhttpRequestUrl);
+    const reqIdentifier = new Date().getTime();
+    const headers = { ...xmlhttpRequestHeaders, '$INTERCEPT_HEADER': reqIdentifier }
     $INTERFACE_NAME.recordXhr(
         url,
         lastXmlhttpRequestPrototypeMethod,
         body || "",
-        JSON.stringify(xmlhttpRequestHeaders),
+        JSON.stringify(headers),
         err.stack
     );
     lastXmlhttpRequestPrototypeMethod = null;
     xmlhttpRequestUrl = null;
     xmlhttpRequestHeaders = {};
+    this.setRequestHeader('$INTERCEPT_HEADER', reqIdentifier);
     this._send(body);
 };
 
