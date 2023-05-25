@@ -174,7 +174,7 @@ internal class RequestInspectorJavaScriptInterface(webView: WebView) {
         @Language("JS")
         private const val JAVASCRIPT_INTERCEPTION_CODE = """
 function getFullUrl(url) {
-    if (url.startsWith("/")) {
+    if (url && url.startsWith("/")) {
         return location.protocol + '//' + location.host + url;
     } else {
         return url;
